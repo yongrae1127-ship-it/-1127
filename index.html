@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 찰떡 이모지 성격 테스트 🔍</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #4a90e2;
+            font-size: 28px;
+        }
+        /* 화면 전환 처리 */
+        #quiz-screen, #result-screen { display: none; }
+        
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 10px;
+            background-color: #4a90e2;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question {
+            font-size: 22px;
+            margin-bottom: 30px;
+            word-break: keep-all;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f0f4f8;
+            border: 2px solid #d9e2ec;
+            border-radius: 12px;
+            font-size: 18px;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background-color: #4a90e2;
+            color: white;
+            border-color: #4a90e2;
+        }
+        .emoji-result {
+            font-size: 80px;
+            margin: 20px 0;
+        }
+        .type-name {
+            font-size: 26px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        .description-box {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .pros-cons {
+            margin: 10px 0;
+        }
+        .start-btn, .retry-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .start-btn:hover, .retry-btn:hover {
+            background-color: #ff5252;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 시작 화면 -->
+    <div id="start-screen">
+        <h1>나의 찰떡 이모지<br>성격 테스트 🔍</h1>
+        <div style="font-size: 100px; margin: 20px 0;">😎</div>
+        <p>32개의 간단한 질문으로<br>나의 숨겨진 성격과 매력을 알아보세요!</p>
+        <button class="start-btn" onclick="startTest()">테스트 시작하기</button>
+    </div>
+
+    <!-- 질문 화면 -->
+    <div id="quiz-screen">
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <h2 class="question" id="question">질문이 여기에 나옵니다.</h2>
+        <button class="btn" id="btn-A" onclick="nextQuestion('A')">답변 A</button>
+        <button class="btn" id="btn-B" onclick="nextQuestion('B')">답변 B</button>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="result-screen">
+        <h1>당신의 결과는?</h1>
+        <div class="emoji-result" id="result-emoji">🦄</div>
+        <div class="type-name" id="result-name">신비로운 유니콘 (INFJ)</div>
+        
+        <div class="description-box">
+            <div class="pros-cons" id="result-pros"><strong>✅ 장점:</strong> 통찰력이 뛰어나고 공감 능력이 깊어요.</div>
+            <div class="pros-cons" id="result-cons"><strong>❌ 단점:</strong> 속마음을 잘 숨기고 가끔 완벽주의에 빠져요.</div>
+        </div>
+        
+        <button class="retry-btn" onclick="location.reload()">다시 테스트하기</button>
+    </div>
+</div>
+
+<script>
+    // 32가지 간결하고 재미있는 질문 데이터 (E/I 8개, S/N 8개, T/F 8개, J/P 8개)
+    const qnaList = [
+        // E vs I
+        { q: "새로운 모임에 나갔을 때 나는?", a: "먼저 다가가서 인사한다", b: "누군가 말 걸어주길 기다린다", type: "EI" },
+        { q: "스트레스 받을 때 나는?", a: "친구들을 만나 수다 떨며 푼다", b: "혼자만의 시간을 가지며 푼다", type: "EI" },
+        { q: "엘리베이터에 모르는 사람과 단둘이 탔다.", a: "가벼운 스몰토크를 시도해본다", b: "조용히 내 스마트폰만 본다", type: "EI" },
+        { q: "주말 내내 집에만 있었다면?", a: "아 답답해! 밖에 나가야 해!", b: "완벽하고 행복한 충전의 시간이었다", type: "EI" },
+        { q: "친구가 갑자기 번개 모임을 제안한다면?", a: "오! 좋아! 당장 씻고 나간다", b: "아... 오늘은 집에서 쉬고 싶은데", type: "EI" },
+        { q: "카페에 갔을 때 선호하는 자리는?", a: "사람 구경하기 좋은 중앙 자리", b: "조용하고 아늑한 구석 자리", type: "EI" },
+        { q: "대화할 때 나는 주로?", a: "이야기를 주도하며 말하는 편이다", b: "리액션하며 잘 들어주는 편이다", type: "EI" },
+        { q: "내 연락처 목록에는?", a: "다양한 분야의 지인 번호가 가득하다", b: "정말 친하고 가까운 사람들의 번호만 있다", type: "EI" },
+        // S vs N
+        { q: "사과를 보면 떠오르는 것은?", a: "빨갛다, 맛있겠다, 동그랗다", b: "백설공주, 뉴턴, 애플 로고, 아이폰", type: "SN" },
+        { q: "길을 걸을 때 나는?", a: "주변 간판이나 지나가는 사람들을 본다", b: "머릿속으로 온갖 상상과 딴생각을 한다", type: "SN" },
+        { q: "요리할 때 나는?", a: "레시피에 적힌 정량과 순서를 지킨다", b: "내 감과 느낌을 믿고 대충 적당히 넣는다", type: "SN" },
+        { q: "영화를 고를 때 선호하는 장르는?", a: "실화 바탕, 다큐멘터리, 현실적인 영화", b: "판타지, SF, 상상력을 자극하는 영화", type: "SN" },
+        { q: "친구가 '나 어제 멍때리다가 역 지나쳤어'라고 한다면?", a: "헐, 그래서 몇 정거장이나 지나쳤어?", b: "무슨 생각하느라 그렇게 집중했어?", type: "SN" },
+        { q: "일을 시작할 때 나는?", a: "구체적인 순서와 방법을 먼저 짠다", b: "전체적인 큰 그림과 의미를 파악한다", type: "SN" },
+        { q: "나에게 더 중요한 것은?", a: "현재의 경험과 현실", b: "미래의 가능성과 이상", type: "SN" },
+        { q: "새로운 조립 가구를 샀다.", a: "설명서부터 처음부터 끝까지 꼼꼼히 읽는다", b: "일단 내 느낌대로 부품을 맞춰 조립해 본다", type: "SN" },
+        // T vs F
+        { q: "친구가 '나 우울해서 화분 샀어'라고 한다면?", a: "무슨 꽃 샀어? 예쁜 거 샀네!", b: "왜 우울해? 무슨 일 있었어?", type: "TF" },
+        { q: "고민 상담을 할 때 내가 진짜 원하는 것은?", a: "문제 해결을 위한 현실적이고 명확한 조언", b: "내 감정을 알아주는 따뜻한 공감과 위로", type: "TF" },
+        { q: "팀 프로젝트 중 한 명이 실수를 했다.", a: "실수한 원인을 분석하고 빠르게 바로잡는다", b: "그 친구가 무안하지 않게 다독이며 돕는다", type: "TF" },
+        { q: "슬픈 영화를 볼 때 나는?", a: "스토리의 개연성을 분석하며 본다", b: "주인공에 완벽 이입해서 같이 오열한다", type: "TF" },
+        { q: "나를 더 기분 좋게 하는 칭찬은?", a: "'와, 너 진짜 일 잘하고 똑똑하다!'", b: "'와, 너랑 같이 있으면 너무 편하고 좋아!'", type: "TF" },
+        { q: "결정의 순간, 나에게 중요한 기준은?", a: "논리와 효율성", b: "사람들과의 관계와 조화", type: "TF" },
+        { q: "거절해야 하는 상황이 오면 나는?", a: "단호하고 명확하게 안 된다고 거절한다", b: "상대방이 상처받을까 봐 돌려서 부드럽게 말한다", type: "TF" },
+        { q: "'넌 참 원칙주의자야'라는 말을 들으면?", a: "음, 내가 좀 정확하고 깔끔하긴 하지", b: "내가 너무 융통성 없나? 조금 섭섭하다", type: "TF" },
+        // J vs P
+        { q: "여행 갈 때 나의 스타일은?", a: "시간대별, 동선별로 철저하게 계획을 짠다", b: "발길 닿는 대로, 그날 기분에 따라 다닌다", type: "JP" },
+        { q: "내 방의 현재 상태는?", a: "물건들이 제자리에 깔끔하게 정리되어 있다", b: "나름의 규칙은 있지만 남들이 보기엔 어수선하다", type: "JP" },
+        { q: "친구와 약속 시간에 나는?", a: "항상 미리 도착해서 여유롭게 기다린다", b: "거의 딱 맞춰서 가거나 아슬아슬하게 지각한다", type: "JP" },
+        { q: "마트에서 장을 볼 때 나는?", a: "미리 적어둔 쇼핑 리스트 메모대로만 산다", b: "돌아다니며 구경하다가 마음에 드는 것을 더 산다", type: "JP" },
+        { q: "일을 할 때 선호하는 방식은?", a: "미리미리 끝내놓고 마음 편하게 쉰다", b: "마감 기한 직전까지 미루다 폭발적인 힘으로 한다", type: "JP" },
+        { q: "식당 메뉴를 고를 때 나는?", a: "식당 가기 전부터 이미 먹을 메뉴를 정해놓았다", b: "식당에 도착해 메뉴판을 보고 그날 땡기는 걸 고른다", type: "JP" },
+        { q: "예상치 못한 일정이 생겼을 때?", a: "계획이 틀어져서 스트레스 받고 당황스럽다", b: "뭐 그럴 수도 있지! 융통성 있게 대처한다", type: "JP" },
+        { q: "내 스마트폰 어플리케이션 배치는?", a: "폴더별, 용도별로 깔끔하게 정리되어 있다", b: "다운받은 순서대로 바탕화면에 방치되어 있다", type: "JP" }
+    ];
+
+    // MBTI 16가지 결과 데이터 (이모지, 타이틀, 장단점)
+    const resultData = {
+        "ISTJ": { emoji: "🐢", title: "책임감 강한 거북이 (ISTJ)", pros: "책임감이 강하고 한 번 맡은 일은 꼼꼼히 끝내요.", cons: "변화를 싫어하고 융통성이 부족해 보일 수 있어요." },
+        "ISFJ": { emoji: "🐻", title: "따뜻한 곰돌이 (ISFJ)", pros: "헌신적이고 주변 사람들을 세심하게 배려해요.", cons: "거절을 잘 못해서 혼자 속앓이를 많이 해요." },
+        "INFJ": { emoji: "🦄", title: "신비로운 유니콘 (INFJ)", pros: "통찰력이 뛰어나고 사람의 마음을 잘 공감해요.", cons: "완벽주의 성향이 있고 속마음을 잘 숨겨요." },
+        "INTJ": { emoji: "🧙‍♂️", title: "냉철한 마법사 (INTJ)", pros: "뛰어난 분석력과 독립적인 문제 해결 능력이 있어요.", cons: "감정 표현이 서툴고 지나치게 합리적일 때가 있어요." },
+        "ISTP": { emoji: "🐱", title: "만능 재주꾼 고양이 (ISTP)", pros: "적응력이 뛰어나고 효율적으로 일을 처리해요.", cons: "귀차니즘이 심하고 타인의 감정에 둔감할 수 있어요." },
+        "ISFP": { emoji: "🦥", title: "평화로운 나무늘보 (ISFP)", pros: "온화하고 다정하며 예술적인 감각이 뛰어나요.", cons: "추진력이 부족하고 갈등 상황을 회피하려 해요." },
+        "INFP": { emoji: "🕊️", title: "감성적인 비둘기 (INFP)", pros: "풍부한 상상력을 가졌고 진정성을 중요하게 여겨요.", cons: "상처를 잘 받는 유리멘탈에 현실 감각이 덜해요." },
+        "INTP": { emoji: "🦉", title: "호기심 많은 올빼미 (INTP)", pros: "지적 호기심이 많고 창의적으로 문제를 해결해요.", cons: "팩트폭력을 잘하고 현실적인 일에 무관심해요." },
+        "ESTP": { emoji: "🐆", title: "날쌘 표범 (ESTP)", pros: "행동력이 최고며 사람들과 금방 친해지는 인싸예요.", cons: "충동적인 면이 있고 계획을 끝까지 밀고 가는 뒷심이 약해요." },
+        "ESFP": { emoji: "🦚", title: "화려한 공작새 (ESFP)", pros: "최고의 분위기 메이커이며 긍정 에너지가 넘쳐요.", cons: "진지한 계획성이 부족하고 유혹에 쉽게 빠져요." },
+        "ENFP": { emoji: "🐬", title: "통통 튀는 돌고래 (ENFP)", pros: "에너지가 넘치고 기발한 아이디어가 솟아나는 뱅크예요.", cons: "쉽게 질려하고 무언가를 깜빡깜빡 잘 덜렁거려요." },
+        "ENTP": { emoji: "🦊", title: "재기발랄한 여우 (ENTP)", pros: "다방면으로 다재다능하고 논쟁과 토론을 즐겨요.", cons: "자기주장이 세고 일을 벌여놓고 수습을 안 할 때가 있어요." },
+        "ESTJ": { emoji: "🦅", title: "엄격한 독수리 (ESTJ)", pros: "체계적이고 리더십이 있으며 확실한 결단력이 있어요.", cons: "화법이 너무 직설적이고 심한 워커홀릭이 될 수 있어요." },
+        "ESFJ": { emoji: "🐘", title: "다정한 코끼리 (ESFJ)", pros: "사교성이 최고 수준이며 협동심과 친절함이 가득해요.", cons: "타인의 시선을 너무 의식하고 가끔 오지랖이 넓어요." },
+        "ENFJ": { emoji: "🐶", title: "핵인싸 강아지 (ENFJ)", pros: "따뜻한 카리스마로 사람들을 이끄는 매력이 넘쳐요.", cons: "타인에게 신경 쓰다 감정 소모가 심하고 거절을 어려워해요." },
+        "ENTJ": { emoji: "🦁", title: "위풍당당 사자 (ENTJ)", pros: "타고난 리더이며 뛰어난 추진력으로 목표를 달성해요.", cons: "타인의 감정에 대한 공감 능력이 부족하고 자기중심적일 수 있어요." }
+    };
+
+    let currentQuestionIndex = 0;
+    
+    // 점수 저장 (E, I, S, N, T, F, J, P)
+    let scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+    function startTest() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = qnaList[currentQuestionIndex];
+        document.getElementById('question').innerHTML = `Q${currentQuestionIndex + 1}. ${qData.q}`;
+        document.getElementById('btn-A').innerHTML = qData.a;
+        document.getElementById('btn-B').innerHTML = qData.b;
+        
+        // 프로그래스 바 업데이트
+        const progressPercent = ((currentQuestionIndex) / qnaList.length) * 100;
+        document.getElementById('progress').style.width = progressPercent + "%";
+    }
+
+    function nextQuestion(choice) {
+        const qData = qnaList[currentQuestionIndex];
+        const type = qData.type; // "EI", "SN", "TF", "JP"
+        
+        // A버튼은 앞 알파벳(E, S, T, J), B버튼은 뒤 알파벳(I, N, F, P)의 점수를 올림
+        if (choice === 'A') {
+            scores[type.charAt(0)]++;
+        } else {
+            scores[type.charAt(1)]++;
+        }
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < qnaList.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+
+        // MBTI 결과 계산
+        let mbti = "";
+        mbti += (scores.E > scores.I) ? "E" : "I";
+        mbti += (scores.S > scores.N) ? "S" : "N";
+        mbti += (scores.T > scores.F) ? "T" : "F";
+        mbti += (scores.J > scores.P) ? "J" : "P";
+
+        // 화면에 결과 출력
+        const resultInfo = resultData[mbti];
+        document.getElementById('result-emoji').innerText = resultInfo.emoji;
+        document.getElementById('result-name').innerText = resultInfo.title;
+        document.getElementById('result-pros').innerHTML = `<strong>✅ 장점:</strong> ${resultInfo.pros}`;
+        document.getElementById('result-cons').innerHTML = `<strong>❌ 단점:</strong> ${resultInfo.cons}`;
+    }
+</script>
+
+</body>
+</html>
